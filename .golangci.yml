@@ -1,0 +1,32 @@
+version: "2"
+linters:
+  default: all
+  disable:
+    - cyclop
+    - depguard
+    - exhaustruct
+    - funlen
+    - godot
+    - godoclint
+    - gochecknoinits
+    - gochecknoglobals
+    - lll
+    - mnd
+    - nlreturn
+    - noinlineerr
+    - revive
+    - tagliatelle
+    - varnamelen
+    - wsl
+    - wsl_v5
+    - wrapcheck
+    - err113
+
+  settings:
+    gosec:
+      excludes:
+        - G304 # Insecure file inclusion
+        - G104 # Unhandled error
+    errcheck:
+      exclude-functions:
+        - (io.Closer).Close
