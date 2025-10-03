@@ -20,13 +20,13 @@ func ExampleSerialReader() {
 	defer r.Close()
 
 	for {
-		content, err := r.Read()
+		telegram, err := r.Read()
 		if err != nil {
 			log.Printf("error reading from serial: %v. re-attempting read in 1 second...\n", err)
 			time.Sleep(1 * time.Second)
 			continue
 		}
-		fmt.Printf("got telegram: %s", string(content))
+		fmt.Printf("got telegram: %#v", telegram)
 	}
 }
 

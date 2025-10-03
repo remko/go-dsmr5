@@ -1,6 +1,7 @@
 package dsmr5
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"log"
@@ -118,7 +119,23 @@ func (t AttributeValue) TimestampValue() (time.Time, error) {
 var obisRE = regexp.MustCompile(`^(\d-\d:\d+\.\d+\.\d+)(.*)$`)
 var valueRE = regexp.MustCompile(`\(([^)\*]+)(\*([^)]+))?\)`)
 
-func ParseTelegram(data []byte) (Telegram, error) {
+func ParseTelegram(data []byte) (*Telegram, error) {
+	exci := bytes.LastIndex(data, []byte("!"))
+	if exci == -1 || len(data) < exci+5 {
+		return nil, errors.New("missing or invalid checksum marker")
+	}
+	crc16, err := strconv.ParseUint(string(data[exci+1:exci+5]), 16, 16)
+	if err != nil {
+		return nil, fmt.Errorf("illegal checksum: %w", err)
+	}
+	dataCRC16 := CRC16(data[:exci+1])
+	if uint16(crc16) != dataCRC16 {
+		return nil, fmt.Errorf("invalid checksum: expected %04X, got %04X", dataCRC16, crc16)
+	}
+	return parseTelegram(data)
+}
+
+func parseTelegram(data []byte) (*Telegram, error) {
 	t := Telegram{Objects: make(map[ObjectID][]AttributeValue)}
 	dataStarted := false
 	for line := range strings.SplitSeq(string(data), "\n") {
@@ -148,5 +165,5 @@ func ParseTelegram(data []byte) (Telegram, error) {
 		}
 		t.Objects[ObjectID(m[1])] = values
 	}
-	return t, nil
+	return &t, nil
 }
