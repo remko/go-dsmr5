@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"time"
 
 	"go.bug.st/serial"
 )
@@ -52,6 +53,9 @@ func NewSerialReader(portName string) (*SerialReader, error) {
 	})
 	if err != nil {
 		return nil, fmt.Errorf("error opening serial port %s: %w", portName, err)
+	}
+	if err := port.SetReadTimeout(3 * time.Second); err != nil {
+		return nil, fmt.Errorf("error setting serial port timeout: %w", err)
 	}
 	r := bufio.NewReader(port)
 	return &SerialReader{r: r, port: port}, nil
